@@ -1,0 +1,249 @@
+
+--------------------------------------------------- 3.1 ------------------------------------------------------------
+CREATE PROCEDURE emfaniseis( nm varchar(25), srnm varchar(25))
+BEGIN
+  declare usrnm varchar(12);
+  select user.username into @usrnm from user where user.name like @nm and user.surname like @srnm;
+  select @usrnm , t2.evaluationID , t2.jobID , t1.evaluator, t1.position from (select * from evalresult as aithseis where aithseis.username like @usrnm) as t2
+  INNER JOIN (SELECT job_1.id, job_1.position,job_1.evaluator from job AS job_1) as t1
+  ON t1.id=t2.jobID;
+  select * from (select * from evalresult as aithseis where aithseis.username like @usrnm AND aithseis.gradeSum IS NOT NULL) as t1
+  INNER JOIN(select t3.name, t3.surname, t3.id from (select * from job as job_1 INNER JOIN user as us ON us.username like job_1.evaluator) as t3 ) as t2
+  ON t2.id=t1.jobID;
+END//
+
+------------------------------------------------------- 3.2 -----------------------------------------------------------
+
+CREATE PROCEDURE ftiakse_gradeSum( j_id integer , evalu_id INTEGER )
+BEGIN
+  DECLARE done INT DEFAULT FALSE;
+  declare evalu_username varchar(12);
+  declare evalID integer;
+  declare va81 integer;
+  declare va82 integer;
+  declare va83 integer;
+  DECLARE curse CURSOR FOR SELECT evaluationID, grade1,grade2,grade3 FROM evalresult where evalresult.job_ID = j_id;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+  select evaluator.username into @evalu_username
+  from evaluator where evaluator.evaluatorID = evalu_id;
+  open curse; 
+  m_loop : loop
+  FETCH curse INTO evalID, va81, va82, va83;
+  IF done THEN
+      LEAVE m_loop;
+  END IF;
+  IF(va81 IS NOT NULL AND va82 IS NOT NULL AND va83 IS NOT NULL) THEN
+  UPDATE evalresult SET evalresult.gradeSum = @va81 + @va82 + @va83 where evalresult.evaluationID=@evalID;
+  END IF;
+  END LOOP;
+  CLOSE curse;
+END//
+
+---------------------------------- 3.3 --------------------------------
+
+CREATE PROCEDURE va8mos_aksiologhshs( pos varchar(40) )
+BEGIN
+  DECLARE va8mos_aks INT;
+  DECLARE va8mos_aks_2 INT;
+  DECLARE va8mos_aks_3 INT;
+    select COUNT(telikoi_va8moi.gradeSum) INTO @va8mos_aks
+    from evalresult as telikoi_va8moi
+    INNER JOIN(
+    SELECT job_1.id from job AS job_1 where job_1.position LIKE pos) t1
+    ON t1.id=telikoi_va8moi.jobID;
+    select COUNT(*) INTO @va8mos_aks_2
+    from evalresult as telikoi_va8moi
+    INNER JOIN(
+    SELECT job_1.id from job AS job_1 where job_1.position LIKE pos) t1
+    ON t1.id=telikoi_va8moi.jobID;
+  IF @va8mos_aks=0 THEN
+      SELECT "den einai etoimo" as message;
+  ELSEIF @va8mos_aks=@va8mos_aks_2  THEN
+      SELECT "oristikopoihmenoi pinakes" as message;
+    select telikoi_va8moi.gradeSum , telikoi_va8moi.username, telikoi_va8moi.jobID, t1.position
+    from evalresult as telikoi_va8moi
+    INNER JOIN(
+    SELECT job_1.id , job_1.position from job AS job_1 where job_1.position LIKE pos) t1
+    ON t1.id=telikoi_va8moi.jobID
+    ORDER BY (telikoi_va8moi.gradeSum) DESC;    
+  ELSEIF @va8mos_aks<@va8mos_aks_2 AND @va8mos_aks>0 THEN
+	SET @va8mos_aks_3 := @va8mos_aks_2 - @va8mos_aks;
+	SELECT "Aksiologhsh se ekseliksh Ekkremoun" , @va8mos_aks_3 as message;
+    select telikoi_va8moi.gradeSum , telikoi_va8moi.username, telikoi_va8moi.jobID, t1.position
+    from evalresult as telikoi_va8moi
+    INNER JOIN(
+    SELECT job_1.id , job_1.position from job AS job_1 where job_1.position LIKE pos) t1
+    ON t1.id=telikoi_va8moi.jobID
+    WHERE telikoi_va8moi.gradeSum IS NOT NULL;
+  END IF;
+END// 
+
+---------------------------------------------- GIA NA MHN ALLAZEI H PLHROFORIA SE USER -----------------------------------------
+
+CREATE TRIGGER InsertPreventTrigger BEFORE INSERT ON user
+   FOR EACH ROW
+   BEGIN
+   DECLARE num_1 integer;
+   DECLARE num_2 integer;
+   select COUNT(*) into @num_1 from administrator where (administrator.admin_username LIKE (SELECT user_online.username from user_online) );
+   select COUNT(*) into @num_2 from user_online;
+   IF( @num_1=0 AND @num_2>0) THEN
+   SIGNAL SQLSTATE '45000'
+   SET MESSAGE_TEXT = 'You can not insert record';
+   END IF;
+   END //
+
+--------------------------------------------- GIA NA KRATW TI PAIZEI SE PINAKA LOG , JOB ----------------------------------------------
+
+CREATE TRIGGER save_insert_job AFTER INSERT ON job
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'insert', 'job');
+   END IF;  
+ END //
+
+CREATE TRIGGER save_update_job AFTER UPDATE ON job
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'update', 'job');
+   END IF;  
+ END //
+
+CREATE TRIGGER save_delete_job AFTER DELETE ON job
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'delete', 'job');
+   END IF;  
+ END //
+
+--------------------------------------------------- GIA NA KRATW TI PAIZEI SE PINAKA LOG , EMPLOYEE-----------------------------------------
+
+CREATE TRIGGER save_delete_employee AFTER DELETE ON employee
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'delete', 'employee');
+   END IF;  
+ END //
+
+CREATE TRIGGER save_update_employee AFTER UPDATE ON employee
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'update', 'employee');
+   END IF;  
+ END //
+
+
+CREATE TRIGGER save_insert_employee AFTER INSERT ON employee
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'insert', 'employee');
+   END IF;  
+ END //
+
+----------------------------------------------- GIA NA KRATW TI PAIZEI SE PINAKA LOG , REQUESTSEVALUATION --------------------------------------------
+
+CREATE TRIGGER save_delete_requestsevaluation AFTER DELETE ON requestsevaluation
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'delete', 'requestsevaluation');
+   END IF;  
+ END //
+
+CREATE TRIGGER save_update_requestsevaluation AFTER UPDATE ON requestsevaluation
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'update', 'requestsevaluation');
+   END IF;  
+ END //
+
+
+CREATE TRIGGER save_insert_requestsevaluation AFTER INSERT ON requestsevaluation
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'success', 'insert', 'requestsevaluation');
+   END IF;  
+ END //
+
+
+--------------------------------------- YPOLOGISMOS GRADE_SUM ----------------------------------------------------
+
+CREATE TRIGGER ypologismos_grade_sum AFTER UPDATE ON evalresult
+   FOR EACH ROW
+   BEGIN
+   DECLARE msum INTEGER;
+   select user_online.username into @nam from user_online ;
+   IF ( NEW.grade1 IS NOT NULL AND NEW.grade2 IS NOT NULL AND NEW.grade3 IS NOT NULL  ) THEN
+   SET @msum = NEW.grade1 + NEW.grade2 + NEW.grade3;
+   UPDATE evalresult SET evalresult.gradeSum = @msum where evalresult.username LIKE NEW.username;
+   END IF;  
+ END //
+	
+
+CREATE TRIGGER ypologismos_grade_sum AFTER INSERT ON evalresult
+   FOR EACH ROW
+   BEGIN
+   DECLARE msum INTEGER;
+   select user_online.username into @nam from user_online ;
+   IF ( NEW.grade1 IS NOT NULL AND NEW.grade2 IS NOT NULL AND NEW.grade3 IS NOT NULL  ) THEN
+   SET @msum = NEW.grade1 + NEW.grade2 + NEW.grade3;
+   UPDATE evalresult SET evalresult.gradeSum = @msum where evalresult.username LIKE NEW.username;
+   END IF;  
+ END //
+
+
+
+
+----------------------- GIA NA MPAINOUN OI VA8MOI --------------------------------------------------
+CREATE TRIGGER vale_grade_1 AFTER INSERT ON firstPhase
+   FOR EACH ROW
+   BEGIN
+   UPDATE evalresult SET evalresult.grade1 = NEW.grade where evalresult.evaluationID=NEW.evaluationID;
+ END //
+
+CREATE TRIGGER vale_grade_2 AFTER INSERT ON secondPhase
+   FOR EACH ROW
+   BEGIN
+   UPDATE evalresult SET evalresult.grade2 = NEW.grade where evalresult.evaluationID=NEW.evaluationID;
+ END //
+
+CREATE TRIGGER vale_grade_3 AFTER INSERT ON thirdPhase
+   FOR EACH ROW
+   BEGIN
+   UPDATE evalresult SET evalresult.grade3 = NEW.grade where evalresult.evaluationID=NEW.evaluationID;
+ END //
+
+
+---------------------------------------- GIA ETAIRIA ---------------------------------
+
+CREATE TRIGGER den_allazei_afm_doy AFTER UPDATE ON company
+   FOR EACH ROW
+   BEGIN
+   UPDATE company SET company.AFM = OLD.AFM , conmpany.DOY=OLD.DOY where company.AFM =NEW.AFM AND company.DOY=NEW.DOY;
+ END //
