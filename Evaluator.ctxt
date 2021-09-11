@@ -1,5 +1,0 @@
-#BlueJ class context
-comment0.target=Evaluator
-comment1.params=username\ password\ name\ surname\ email\ firm\ expYears\ evaluatorID
-comment1.target=Evaluator(java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ int,\ int)
-numComments=2
