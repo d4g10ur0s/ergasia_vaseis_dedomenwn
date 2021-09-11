@@ -116,8 +116,8 @@ public class Evaluator extends User{
         }
         System.out.println();
       }//endwhile
-      //peirazei mono tis dikes tou
     }
+    //peirazei mono tis dikes tou
     void edit_job(Connection conn) throws SQLException
     {
       Statement stmt = conn.createStatement();
@@ -173,7 +173,7 @@ public class Evaluator extends User{
           System.out.println("Give Subject");
           String sub = inp.nextLine();
           System.out.println("Give ID");
-          rs = stmt.executeQuery("UPDATE job job.salary="+sal+", job.position=\'"+pos+"\', job.edra=\'"+edr+"\', job.submission_date=\'"+subadate+"\', job.start_date=\'"+strt_dat+"\', job.antikeimeno=\'"+sub+"\' "+
+          rs = stmt.executeQuery("UPDATE job job.salary="+sal+", job.position=\'"+pos+"\', job.edra=\'"+edr+"\', job.submission_date=\'"+subdate+"\', job.start_date=\'"+strt_dat+"\', job.antikeimeno=\'"+sub+"\' "+
                                   "where job.evaluator like" +"'%"+this.getUserName()+"%' AND job.id="+inp.nextInt() );
         }
         else{System.out.println("There is no job you can edit with this job id.");}
@@ -228,5 +228,55 @@ public class Evaluator extends User{
                             +"\' , \'"+ edra+"\' , NOW() , \'"+
                             submission_date+"\' , \'" + start_date + "\', \'"+ ant_title +"\')" );
     }
+    //vlepei ti exei oloklhrw8ei
+    void endiamesa_telika_apotelesmata(Connection con) throws SQLException {
+      Statement stmt = con.createStatement();
+      Scanner inp = new Scanner(System.in);
+      System.out.println("Job Position");
+      String lne = inp.nextLine();
+      ResultSet rs = stmt.executeQuery("CALL va8mos_aksiologhshs(\'"+ lne +"\')");
+      rs = stmt.getResultSet();
 
+      ResultSetMetaData metadata = rs.getMetaData();
+      int numberOfColumns = metadata.getColumnCount();
+      //poses ekkremoun
+      int ek = Integer.parseInt( rs.getObject(2).toString() );
+      if(ek == 0)
+      {
+        System.out.println("Den yparxoun ekkremeis aksiologhseis.");
+        rs = stmt.executeQuery("select telikoi_va8moi.gradeSum , telikoi_va8moi.username, telikoi_va8moi.jobID, t1.position from evalresult as telikoi_va8moi INNER JOIN( SELECT job_1.id , job_1.position from job AS job_1 where job_1.position LIKE \'%"
+                                          +lne+"%\') t1 ON t1.id=telikoi_va8moi.jobID ORDER BY (telikoi_va8moi.gradeSum) DESC");
+      }else{
+        //pairnw oti exei oloklhrw8ei
+        rs = stmt.executeQuery("select telikoi_va8moi.gradeSum , telikoi_va8moi.username, telikoi_va8moi.jobID, t1.position from evalresult as telikoi_va8moi INNER JOIN( SELECT job_1.id , job_1.position from job AS job_1 where job_1.position LIKE"
+                                +" \'%"+lne+"%\') t1 ON t1.id=telikoi_va8moi.jobID WHERE telikoi_va8moi.gradeSum IS NOT NULL;");
+        metadata = rs.getMetaData();
+        numberOfColumns = metadata.getColumnCount();
+        while (rs.next())
+        { //emfanizw ta stoixeia
+          for (int i = 1; i <= numberOfColumns; i++)
+          {
+          System.out.printf("%-8s\t ||", rs.getObject(i));
+          }
+          System.out.println();
+        }//endwhile
+
+        //pairnw oti den exei oloklhrw8ei
+        System.out.println("Ekkremoun "+ek+" aksiologhseis");
+        rs = stmt.executeQuery("select telikoi_va8moi.gradeSum , telikoi_va8moi.username, telikoi_va8moi.jobID, t1.position from evalresult as telikoi_va8moi INNER JOIN( SELECT job_1.id , job_1.position from job AS job_1 where job_1.position LIKE"
+                                +"\'%"+lne+"%\') t1 ON t1.id=telikoi_va8moi.jobID WHERE telikoi_va8moi.gradeSum IS NULL;");
+        metadata = rs.getMetaData();
+        numberOfColumns = metadata.getColumnCount();
+        while (rs.next())
+        { //emfanizw ta stoixeia
+          for (int i = 1; i <= numberOfColumns; i++)
+          {
+            System.out.printf("%-8s\t ||", rs.getObject(i));
+          }
+          System.out.println();
+        }//endwhile
+      }//endelse
+
+      //end of function
+    }
 }
