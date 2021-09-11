@@ -1,0 +1,5 @@
+#BlueJ class context
+comment0.target=Manager
+comment1.params=username\ password\ name\ surname\ email\ expYears\ firm
+comment1.target=Manager(java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ int,\ java.lang.String)
+numComments=2

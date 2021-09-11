@@ -1,0 +1,5 @@
+#BlueJ class context
+comment0.target=Project
+comment1.params=description\ num\ url
+comment1.target=Project(java.lang.String,\ int,\ java.lang.String)
+numComments=2

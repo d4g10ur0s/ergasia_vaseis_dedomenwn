@@ -1,0 +1,5 @@
+#BlueJ class context
+comment0.target=EvalResult
+comment1.params=employeeUsername\ evaluationID\ evaluatorUsername\ jobID\ grade1\ grade2\ grade3\ gradeSum\ comments
+comment1.target=EvalResult(java.lang.String,\ int,\ java.lang.String,\ int,\ int,\ int,\ int,\ int,\ java.lang.String)
+numComments=2

@@ -1,0 +1,7 @@
+#BlueJ class context
+comment0.target=Company
+comment1.params=name\ AFM\ DOY\ country\ city\ street\ phoneNumber\ num
+comment1.target=Company(java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ java.lang.String,\ int,\ int)
+comment2.params=
+comment2.target=java.lang.String\ getComp()
+numComments=3

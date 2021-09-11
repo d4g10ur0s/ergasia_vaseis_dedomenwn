@@ -1,0 +1,5 @@
+#BlueJ class context
+comment0.target=Certificate
+comment1.params=titlos\ idryma\ v
+comment1.target=Certificate(java.lang.String,\ java.lang.String,\ Certificate.vathmida)
+numComments=2
