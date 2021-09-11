@@ -144,9 +144,39 @@ public class Evaluator extends User{
       }
       else
       {
-        //edw 8a prepei na ginei diasundesh me GUI
-        //ta katallhla koumpia
         //to update kalutera na ginetai mesw id
+        System.out.println("Give ID");
+        rs = stmt.executeQuery("select * from job where job.evaluator like" +"'%"+this.getUserName()+"%' AND job.id="+inp.nextInt() );
+        rs = stmt.getResultSet();
+        metadata = rs.getMetaData();
+        if(rs.next()){
+          //edw 8a prepei na ginei diasundesh me GUI
+          //ta katallhla koumpia
+          //vazeis to info kai meta to kaneis push
+          //id(1) kai announce_date(6) menoun idia
+          //salary
+          System.out.println("Give salary");
+          int sal = inp.nextInt();
+          //position
+          System.out.println("Give position");
+          String pos = inp.nextLine();
+          //edra
+          System.out.println("Give edra");
+          String edr = inp.nextLine();
+          //submission_date
+          System.out.println("Give submission date");
+          String subdate = inp.nextLine();
+          //start date
+          System.out.println("Give start date");
+          String strt_dat = inp.nextLine();
+          //antikeimeno
+          System.out.println("Give Subject");
+          String sub = inp.nextLine();
+          System.out.println("Give ID");
+          rs = stmt.executeQuery("UPDATE job job.salary="+sal+", job.position=\'"+pos+"\', job.edra=\'"+edr+"\', job.submission_date=\'"+subadate+"\', job.start_date=\'"+strt_dat+"\', job.antikeimeno=\'"+sub+"\' "+
+                                  "where job.evaluator like" +"'%"+this.getUserName()+"%' AND job.id="+inp.nextInt() );
+        }
+        else{System.out.println("There is no job you can edit with this job id.");}
       }
     }
     //o evaluator vazei nea jobs
