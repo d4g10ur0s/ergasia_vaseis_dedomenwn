@@ -1,3 +1,41 @@
+------------------------------------ SHMANTIKA TRIGGERS ---------------------------------------
+
+** gia na mpainei info se firstPhase **
+
+CREATE TRIGGER prwth_fash AFTER INSERT ON evalresult
+   FOR EACH ROW
+   BEGIN
+   INSERT INTO firstPhase values(NEW.evaluationID,NEW.grade1,NULL);
+ END //
+
+** gia na mpainei info se secondPhase **
+
+CREATE TRIGGER deyterh_fash AFTER INSERT ON evalresult
+   FOR EACH ROW
+   BEGIN
+   declare jobid int;
+   declare eval varchar(12);
+   declare frm varchar(9);
+   SET @jobid=NEW.jobID;
+   select t2.evaluator INTO @eval
+   from (select * from evalresult as evalr where jobID=NEW.jobID AND evaluationID=NEW.evaluationID ) as t1
+   INNER JOIN (select * from job as jb) as t2 ON t1.jobID=t2.id;
+   select evaluator.firm INTO @frm from evaluator where evaluator.evaluatorUsername like @eval;
+   select managerUsername INTO @eval from manager where manager.firm like @frm;
+   INSERT INTO secondPhase VALUES (NEW.evaluationID, @eval, NULL , NULL);
+ END //
+
+** gia na mpainei info se thirdPhase **
+
+CREATE TRIGGER trith_fash AFTER INSERT ON evalresult
+   FOR EACH ROW
+   BEGIN
+   declare prj int;
+   declare dgr varchar(50);
+   select employee.certificates into @dgr from employee where employee.employeeUsername like NEW.username;
+   select COUNT(*) INTO @prj from projects where projects.empl like NEW.username;
+   INSERT INTO thirdPhase VALUES (NEW.evaluationID, NULL , NULL , @prj , @dgr , NULL);
+ END //
 
 --------------------------------------------------- 3.1 ------------------------------------------------------------
 CREATE PROCEDURE emfaniseis( nm varchar(25), srnm varchar(25))
@@ -95,15 +133,36 @@ CREATE TRIGGER InsertPreventTrigger BEFORE INSERT ON user
 
 --------------------------------------------- GIA NA KRATW TI PAIZEI SE PINAKA LOG , JOB ----------------------------------------------
 
+CREATE TRIGGER prevent_insert_job BEFORE INSERT ON job
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'failed', 'insert', 'job',0);
+   END IF;  
+ END //
+
 CREATE TRIGGER save_insert_job AFTER INSERT ON job
    FOR EACH ROW
    BEGIN
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'insert', 'job');
+   UPDATE action set executed='success' where username like @nam AND date_time like NEW.announce_date AND kind like '%insert%' ;
    END IF;  
  END //
+
+CREATE TRIGGER prevent_update_job AFTER UPDATE ON job
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'failed', 'update', 'job');
+   END IF;  
+ END //
+
 
 CREATE TRIGGER save_update_job AFTER UPDATE ON job
    FOR EACH ROW
@@ -111,7 +170,17 @@ CREATE TRIGGER save_update_job AFTER UPDATE ON job
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'update', 'job');
+   UPDATE action set executed='success' where username like @nam AND date_time like NEW.announce_date AND kind like '%update%' ;
+   END IF;  
+ END //
+
+CREATE TRIGGER prevent_delete_job BEFORE DELETE ON job
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'failed', 'delete', 'job');
    END IF;  
  END //
 
@@ -121,11 +190,21 @@ CREATE TRIGGER save_delete_job AFTER DELETE ON job
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'delete', 'job');
+   UPDATE action set executed='success' where username like @nam AND date_time like OLD.submission_date AND kind like '%delete%' ;
    END IF;  
  END //
 
 --------------------------------------------------- GIA NA KRATW TI PAIZEI SE PINAKA LOG , EMPLOYEE-----------------------------------------
+
+CREATE TRIGGER prevent_delete_employee BEFORE DELETE ON employee
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'failed', 'delete', 'employee');
+   END IF;  
+ END //
 
 CREATE TRIGGER save_delete_employee AFTER DELETE ON employee
    FOR EACH ROW
@@ -133,7 +212,18 @@ CREATE TRIGGER save_delete_employee AFTER DELETE ON employee
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'delete', 'employee');
+   UPDATE action set executed='success' where username like @nam AND date_time like NOW() AND kind like '%delete%' ;
+   END IF;  
+ END //
+
+
+CREATE TRIGGER prevent_update_employee AFTER UPDATE ON employee
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'failed', 'update', 'employee');
    END IF;  
  END //
 
@@ -143,22 +233,44 @@ CREATE TRIGGER save_update_employee AFTER UPDATE ON employee
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'update', 'employee');
+   UPDATE action set executed='success' where username like @nam AND date_time like NOW() AND kind like '%update%' ;
    END IF;  
  END //
 
 
-CREATE TRIGGER save_insert_employee AFTER INSERT ON employee
+CREATE TRIGGER save_insert_employee BEFORE INSERT ON employee
    FOR EACH ROW
    BEGIN
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'insert', 'employee');
+   INSERT INTO action values(@nam, NOW(), 'failed', 'insert', 'employee');
    END IF;  
  END //
 
+CREATE TRIGGER prevent_insert_employee AFTER INSERT ON employee
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   UPDATE action set executed='success' where username like @nam AND date_time like NOW() AND kind like '%insert%' ;
+   END IF;  
+ END //
+
+
 ----------------------------------------------- GIA NA KRATW TI PAIZEI SE PINAKA LOG , REQUESTSEVALUATION --------------------------------------------
+
+CREATE TRIGGER prevent_delete_requestsevaluation AFTER DELETE ON requestsevaluation
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'delete', 'delete', 'requestsevaluation');
+   END IF;  
+ END //
+
 
 CREATE TRIGGER save_delete_requestsevaluation AFTER DELETE ON requestsevaluation
    FOR EACH ROW
@@ -166,7 +278,18 @@ CREATE TRIGGER save_delete_requestsevaluation AFTER DELETE ON requestsevaluation
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'delete', 'requestsevaluation');
+   UPDATE action set executed='success' where username like @nam AND date_time like NOW() AND kind like '%delete%' ;
+   END IF;  
+ END //
+
+
+CREATE TRIGGER prevent_update_requestsevaluation AFTER UPDATE ON requestsevaluation
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'failed', 'update', 'requestsevaluation');
    END IF;  
  END //
 
@@ -176,10 +299,20 @@ CREATE TRIGGER save_update_requestsevaluation AFTER UPDATE ON requestsevaluation
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'update', 'requestsevaluation');
+   UPDATE action set executed='success' where username like @nam AND date_time like NOW() AND kind like '%update%' ;
    END IF;  
  END //
 
+
+CREATE TRIGGER prevent_insert_requestsevaluation AFTER INSERT ON requestsevaluation
+   FOR EACH ROW
+   BEGIN
+   DECLARE nam varchar(12);
+   select user_online.username into @nam from user_online ;
+   IF ( @nam IS NOT NULL ) THEN
+   INSERT INTO action values(@nam, NOW(), 'failed', 'insert', 'requestsevaluation');
+   END IF;  
+ END //
 
 CREATE TRIGGER save_insert_requestsevaluation AFTER INSERT ON requestsevaluation
    FOR EACH ROW
@@ -187,7 +320,7 @@ CREATE TRIGGER save_insert_requestsevaluation AFTER INSERT ON requestsevaluation
    DECLARE nam varchar(12);
    select user_online.username into @nam from user_online ;
    IF ( @nam IS NOT NULL ) THEN
-   INSERT INTO action values(@nam, NOW(), 'success', 'insert', 'requestsevaluation');
+   UPDATE action set executed='success' where username like @nam AND date_time like NOW() AND kind like '%insert%' ;
    END IF;  
  END //
 
