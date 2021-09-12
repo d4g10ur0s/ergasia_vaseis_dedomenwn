@@ -174,7 +174,7 @@ public class Evaluator extends User{
           String sub = inp.nextLine();
           System.out.println("Give ID");
           rs = stmt.executeQuery("UPDATE job job.salary="+sal+", job.position=\'"+pos+"\', job.edra=\'"+edr+"\', job.submission_date=\'"+subdate+"\', job.start_date=\'"+strt_dat+"\', job.antikeimeno=\'"+sub+"\' "+
-                                  "where job.evaluator like" +"'%"+this.getUserName()+"%' AND job.id="+inp.nextInt() );
+                                  "where job.evaluator like" +"\'%"+this.getUserName()+"%\' AND job.id="+inp.nextInt() );
         }
         else{System.out.println("There is no job you can edit with this job id.");}
       }

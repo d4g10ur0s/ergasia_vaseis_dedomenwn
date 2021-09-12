@@ -159,10 +159,10 @@ public class Employee extends User{
         //aytomata mesw triggers mpainei plhroforia se firstPhase,secondPhase, thirdPhase.
         rs = stmt.executeQuery("INSERT INTO evalresult VALUES (\'"+this.getUserName()+"\',"+rnd+","+id+"NULL , NULL, NULL , NULL ,NULL ,NULL)");
         //update bio
-        ResultSet rs = stmt.executeQuery("SELECT position from job where job.id="+id);
+        rs = stmt.executeQuery("SELECT position from job where job.id="+id);
         rs = stmt.getResultSet();
         this.bio+="Aithsh gia " + rs.getObject(1).toString();
-        ResultSet rs = stmt.executeQuery("UPDATE employee SET employee.bio="+lne+" WHERE employee.employeeUsername=\'%"+ this.getUserName() +"%\'");
+        rs = stmt.executeQuery("UPDATE employee SET employee.bio=\'"+this.bio+"\' WHERE employee.employeeUsername=\'%"+ this.getUserName() +"%\'");
       }
 
     }//end des aithseis
