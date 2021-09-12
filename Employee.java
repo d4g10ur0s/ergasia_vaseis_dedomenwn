@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.sql.*;
+import java.util.Random;
 
 
 public class Employee extends User{
@@ -89,16 +90,17 @@ public class Employee extends User{
       int opt = inp.nextInt();
       if(opt == 1){
         this.bio = "";
-        String lne;
-        while(true){
-          lne = inp.nextLine();
-          if(lne.length()==0 || lne.length() == 1){break;}
-          this.bio+=lne;
-        }
-        ResultSet rs = stmt.executeQuery("UPDATE employee SET employee.bio="+lne+" WHERE employee.employeeUsername=\'%"+ this.getUserName() +"%\'");
       }
-      else if(opt==2){}
-
+      else if(opt==2){
+        //apla vale neo info se bio kai steile se server
+      }
+      String lne;
+      while(true){
+        lne = inp.nextLine();
+        if(lne.length()==0 || lne.length() == 1){break;}
+        this.bio+=lne;
+      }
+      ResultSet rs = stmt.executeQuery("UPDATE employee SET employee.bio="+lne+" WHERE employee.employeeUsername=\'%"+ this.getUserName() +"%\'");
     }
     //vlepw aithseis
     public void des_aithseis(Connection conn) throws SQLException {
@@ -147,7 +149,20 @@ public class Employee extends User{
       }else{
         System.out.println("Job Id");
         int id = inp.nextInt();
-        //prpei na valw se pinakes evalresult, requestsevaluation, firstPhase,secondPhase, thirdPhase.
+
+        //requestsevaluation
+        rs = stmt.executeQuery("INSERT INTO requestsevaluation VALUES (\'"+this.getUserName()+"\',"+id+")");
+        //prpei na valw se pinakes evalresult, requestsevaluation
+        //enas random ari8mos gia evaluation id
+        int rnd = new Random().nextInt(9999);
+        //PREPEI NA APOFEYGONTAI CONFLICTS SE EVALUATION ID
+        //aytomata mesw triggers mpainei plhroforia se firstPhase,secondPhase, thirdPhase.
+        rs = stmt.executeQuery("INSERT INTO evalresult VALUES (\'"+this.getUserName()+"\',"+rnd+","+id+"NULL , NULL, NULL , NULL ,NULL ,NULL)");
+        //update bio
+        ResultSet rs = stmt.executeQuery("SELECT position from job where job.id="+id);
+        rs = stmt.getResultSet();
+        this.bio+="Aithsh gia " + rs.getObject(1).toString();
+        ResultSet rs = stmt.executeQuery("UPDATE employee SET employee.bio="+lne+" WHERE employee.employeeUsername=\'%"+ this.getUserName() +"%\'");
       }
 
     }//end des aithseis
