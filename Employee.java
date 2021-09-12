@@ -1,8 +1,8 @@
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.sql.*;
 import java.util.Random;
-
 
 public class Employee extends User{
 
@@ -26,11 +26,11 @@ public class Employee extends User{
 
     public void get_my_info(Connection conn) throws SQLException {
 
-      System.out.println("1. Username : " + this.getUserName() +
+      JOptionPane.showMessageDialog(null, "Welcome " + "!"+"1. Username : " + this.getUserName() +
       "\n2. Full Name : " + this.getName() + " " + this.getSurname() +
         "\n3. E-mail : " + this.getEmail() +"\n4. Bio : " + this.bio +
          "\n5. Years of Expirience : " + this.expYears + "\n6. Recommendations : " + this.recommendations
-         +"\n7. Certificates : " + this.certificates + "\n8. A.M. : " + this.am + "\n9. Awards : " + this.awards);
+         +"\n7. Certificates : " + this.certificates + "\n8. A.M. : " + this.am + "\n9. Awards : " + this.awards,"",JOptionPane.PLAIN_MESSAGE);
       //User input
       Scanner inp = new Scanner(System.in);
       System.out.println("Give Numbers With Spaces");
@@ -157,7 +157,7 @@ public class Employee extends User{
         int rnd = new Random().nextInt(9999);
         //PREPEI NA APOFEYGONTAI CONFLICTS SE EVALUATION ID
         //aytomata mesw triggers mpainei plhroforia se firstPhase,secondPhase, thirdPhase.
-        rs = stmt.executeQuery("INSERT INTO evalresult VALUES (\'"+this.getUserName()+"\',"+rnd+","+id+"NULL , NULL, NULL , NULL ,NULL ,NULL)");
+        rs = stmt.executeQuery("INSERT INTO evalresult VALUES (\'"+this.getUserName()+"\',"+rnd+","+id+",NULL , NULL, NULL , NULL ,NULL ,NULL)");
         //update bio
         rs = stmt.executeQuery("SELECT position from job where job.id="+id);
         rs = stmt.getResultSet();
